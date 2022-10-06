@@ -6,8 +6,9 @@ const todosRoutes = require("./todos.routes");
 const cors = require("cors")
 const pg = require('pg');
 require('dotenv').config();
-const isProduction = process.env.NODE_ENV ==='production';
-const connectionString ="postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}";
+const isProduction = process.env.NODE_ENV === 'production';
+const connectionString ="postgresql://mzxwktmxwfbhgn:7e4adf8bf66aa9868d479f24a7cc0821b069730d841b5984af4a7086de7e00bb@ec2-3-220-207-90.compute-1.amazonaws.com:5432/dufetkerp4kg";
+//const connectionString ="postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}";
 const pool = new pg.Pool({
   connectionString: isProduction ? process.env.DATABASE_URL : connectionString,
   ssl: isProduction,
