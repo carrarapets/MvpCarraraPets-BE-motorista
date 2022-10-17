@@ -11,20 +11,22 @@ const prisma = new PrismaClient();
 
 
 
-todosRoutes.post("/createuser", async(request, response) =>{
+todosRoutes.post("/CreateMotorista", async(request, response) =>{
     try {
-        const{nome, sobrenome, cpf, celular, email, password, rg, foto}=request.body;
-    const criaUsuario = await prisma.user.create({
+        const{nome, sobrenome, email, CNH, password, foto,
+        ant_criminal, celular}=request.body;
+    const criaUsuario = await prisma.motorista.create({
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
             valido: true,
             rg, 
-            foto
+            foto,
+            ant_criminal
             
 
         }
@@ -36,11 +38,11 @@ todosRoutes.post("/createuser", async(request, response) =>{
     }
     
 });
-todosRoutes.get("/loginuser", async(request, response)=>{
+todosRoutes.get("/LoginMotorista", async(request, response)=>{
     try {
         const {email, password}= request.body;
     
-        const loginUser =  await prisma.user.findFirst({
+        const loginUser =  await prisma.motorista.findFirst({
             where:{
                 email: email,
                 password: password
@@ -52,11 +54,6 @@ todosRoutes.get("/loginuser", async(request, response)=>{
         throw new Error("Usuário/Senha incorreto")
 
     }
-    const comparaSenha =  equal(user.password, password);
-    if (!comparaSenha) {
-        throw new Error("Usuário/Senha incorreto")
-        
-    }
     return response.status(200).json("login efetuado com sucesso");
         
     } catch (error) {
@@ -66,10 +63,10 @@ todosRoutes.get("/loginuser", async(request, response)=>{
 });
 
 
-todosRoutes.get("/getuser/:id", async(request, response)=>{
+todosRoutes.get("/GetMotorista/:id", async(request, response)=>{
     try {
         const {id} = request.params;
-    const lerUsuario = await prisma.user.findUnique({
+    const lerUsuario = await prisma.motorista.findUnique({
         where:{
             id: Number(id)
         },
@@ -88,23 +85,23 @@ todosRoutes.get("/", (req, res) =>{
     
 });
 
-todosRoutes.post("/updateuser/:id", async(request, response)=>{
+todosRoutes.post("/UpdateMotorista/:id", async(request, response)=>{
     try {
         const{id} = request.params;
-    const atualizaUsuario = await prisma.user.update({
+    const atualizaUsuario = await prisma.motorista.update({
         where:{
             id: Number(id)
         },
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
-            valido: true,
             rg, 
-            foto
+            foto,
+            ant_criminal
             
         }
     });
@@ -115,23 +112,24 @@ todosRoutes.post("/updateuser/:id", async(request, response)=>{
     
 });
 
-todosRoutes.delete("/deleteuser/:id", async(request, response)=>{
+todosRoutes.delete("/DeleteMotorista/:id", async(request, response)=>{
     try {
         const{id}= request.params;
-    const deletaUsuario = await prisma.user.delete({
+    const deletaUsuario = await prisma.motorista.delete({
         where:{
             id: Number(id)
         },
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
             valido: true,
             rg, 
-            foto
+            foto,
+            ant_criminal
             
         }
 
@@ -144,61 +142,58 @@ todosRoutes.delete("/deleteuser/:id", async(request, response)=>{
     
 });
 // ROTAS USUARIO COM PET
-todosRoutes.post("/createpet/", async(request, response)=>{
+todosRoutes.post("/CreateCarro/", async(request, response)=>{
     try {
-        const {userId, nome, peso, comportamento, foto, sexo, raca, especia}= request.params;
-const criaPet = await prisma.pet.create({
+        const {placa, modelo, marca, renavam, cor, motoristaId}= request.params;
+const criaCarro = await prisma.carro.create({
     data:{
-  nome,          
-  peso,          
-  comportamento, 
-  foto,          
-  sexo,          
-  raca,          
-  especia, 
-  userId     
+    placa,
+    modelo,
+    marca,
+    renavam,
+    cor,
+    motoristaId 
     }
 
     
 });
-return response.status(200).json(criaPet);
+return response.status(200).json(criaCarro);
     } catch (error) {
         return response.status(200).json({message: error.message});
     }
 
 });
-todosRoutes.get("/getpet/:id", async (request, response) =>{
+todosRoutes.get("/GetCarro/:id", async (request, response) =>{
 
     try {
-        const {userId} = request.body;
- const mostraPet =  await prisma.user.findMany({
+        const {motoristaId} = request.body;
+ const mostraCarro =  await prisma.user.findMany({
     where:{
-        Id: userId
+        Id: motoristaId
     }
 
  });
-  return reponse.status(200).json(mostraPet);
+  return reponse.status(200).json(mostraCarro);
     } catch (error) {
         return reponse.status(200).json({message: error.message});
     }
 });
 
-todosRoutes.post("/updatepet/:id", async(request, response)=>{
+todosRoutes.post("/UpdateCarro/:id", async(request, response)=>{
     try {
-        const {userId}= request.params;
+        const {motoristaId}= request.params;
 const criaPet = await prisma.pet.create({
     where:{
-        id: Number(userId)
+        id: Number(motoristaId)
 
     },
     data:{
-  nome,          
-  peso,          
-  comportamento, 
-  foto,          
-  sexo,          
-  raca,          
-  especia,      
+        placa,
+        modelo,
+        marca,
+        renavam,
+        cor,
+        
     }
 
     
@@ -209,6 +204,6 @@ return response.status(200).json("Dados Atualizados com sucesso");
     }
 
 });
-//ROTAS COM PEDIDO SELECIONANDO O PET 
+
 
 module.exports = todosRoutes;
