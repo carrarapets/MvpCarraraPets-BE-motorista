@@ -2,14 +2,25 @@
 const { response } = require("express");
 
 const express = require("express")
-
+const jwt = require('jsonwebtoken');
+const ConfigServerEmail = require('./serverEmail');
 const todosRoutes = express.Router();
 const {PrismaClient} = require("@prisma/client");
 const { equal } = require("assert");
 
 const prisma = new PrismaClient();
+const secret = process.env.SECRET;
+
+function verifyJwt (request, response, next){
+    const token =  req.headers['x-access-token'];
+    jwt.verify(token, secret, async(err, decoded) =>{
+        if(err) return response.status(401).end();
+
+        request.loginUser = decoded.loginUser;
 
 
+    })
+};
 
 todosRoutes.post("/CreateMotorista", async(request, response) =>{
     try {
@@ -29,8 +40,20 @@ todosRoutes.post("/CreateMotorista", async(request, response) =>{
             ant_criminal
             
 
-        }
-    });
+        },
+    },
+    ConfigServerEmail.sendMail({
+        from:'Carrara Pets <carrarapets@gmail.com>',
+        to: email,
+        subject: 'Cadastro Completo',
+        html:' <h1>oi,'+ nome+' '+sobrenome+ ' tudo bem?</h1> <p> eviando esse email, para confirmar seu cadastro',
+        text:'oi, tudo bem? Estou testando o envio de email'
+    
+    })
+    .then((reponse)=> console.log('Email enviado com sucesso') )
+    .catch((err) => console.log('Erro ao enviar email', err))
+    
+    );
     return response.status(201).json(criaUsuario);
         
     } catch (error) {
@@ -38,7 +61,7 @@ todosRoutes.post("/CreateMotorista", async(request, response) =>{
     }
     
 });
-todosRoutes.get("/LoginMotorista", async(request, response)=>{
+todosRoutes.post("/LoginMotorista", async(request, response)=>{
     try {
         const {email, password}= request.body;
     
@@ -76,6 +99,7 @@ todosRoutes.get("/GetMotorista/:id", async(request, response)=>{
     } catch (error) {
         return response.status(200).json({message: error.message});
     }
+    
     
 });
 todosRoutes.get("/", (req, res) =>{
