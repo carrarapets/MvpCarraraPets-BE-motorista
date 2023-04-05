@@ -2,28 +2,30 @@
 const { response } = require("express");
 
 const express = require("express")
-
+const {generateToken} = require("./auth")
 const todosRoutes = express.Router();
 const {PrismaClient} = require("@prisma/client");
 const { equal } = require("assert");
+const { verifyToken } = require("./authMiddleware");
 
 const prisma = new PrismaClient();
 
 
 
-todosRoutes.post("/createuser", async(request, response) =>{
+todosRoutes.post("/createmotorista", async(request, response) =>{
     try {
-        const{nome, sobrenome, cpf, celular, email, password, rg, foto}=request.body;
-    const criaUsuario = await prisma.user.create({
+        const{nome, sobrenome, CNH, celular, email, password,validade_cnh, ant_criminal, foto, }=request.body;
+    const criaUsuario = await prisma.motorista.create({
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
             valido: true,
-            rg, 
+            validade_cnh,
+            ant_criminal, 
             foto
             
 
@@ -36,11 +38,11 @@ todosRoutes.post("/createuser", async(request, response) =>{
     }
     
 });
-todosRoutes.get("/loginuser", async(request, response)=>{
+todosRoutes.get("/loginMotorista", async(request, response)=>{
     try {
         const {email, password}= request.body;
     
-        const loginUser =  await prisma.user.findFirst({
+        const loginUser =  await prisma.motorista.findFirst({
             where:{
                 email: email,
                 password: password
@@ -52,12 +54,13 @@ todosRoutes.get("/loginuser", async(request, response)=>{
         throw new Error("Usuário/Senha incorreto")
 
     }
-    const comparaSenha =  equal(user.password, password);
+    const comparaSenha =  equal(motorista.password, password);
     if (!comparaSenha) {
         throw new Error("Usuário/Senha incorreto")
         
     }
-    return response.status(200).json("login efetuado com sucesso");
+    const token =generateToken(id);
+    return response.status(200).json({token});
         
     } catch (error) {
         return response.status(500).json({message: error.message});
@@ -66,10 +69,10 @@ todosRoutes.get("/loginuser", async(request, response)=>{
 });
 
 
-todosRoutes.get("/getuser/:id", async(request, response)=>{
+todosRoutes.get("/getMotorista/:id", verifyToken, async(request, response)=>{
     try {
         const {id} = request.params;
-    const lerUsuario = await prisma.user.findUnique({
+    const lerUsuario = await prisma.motorista.findUnique({
         where:{
             id: Number(id)
         },
@@ -88,22 +91,23 @@ todosRoutes.get("/", (req, res) =>{
     
 });
 
-todosRoutes.post("/updateuser/:id", async(request, response)=>{
+todosRoutes.post("/updatemotorista/:id",verifyToken, async(request, response)=>{
     try {
         const{id} = request.params;
-    const atualizaUsuario = await prisma.user.update({
+    const atualizaUsuario = await prisma.motorista.update({
         where:{
             id: Number(id)
         },
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
             valido: true,
-            rg, 
+            validade_cnh,
+            ant_criminal, 
             foto
             
         }
@@ -115,7 +119,7 @@ todosRoutes.post("/updateuser/:id", async(request, response)=>{
     
 });
 
-todosRoutes.delete("/deleteuser/:id", async(request, response)=>{
+todosRoutes.delete("/deletemotorista/:id",verifyToken, async(request, response)=>{
     try {
         const{id}= request.params;
     const deletaUsuario = await prisma.user.delete({
@@ -125,12 +129,13 @@ todosRoutes.delete("/deleteuser/:id", async(request, response)=>{
         data:{
             nome,
             sobrenome,
-            cpf,
+            CNH,
             celular,
             email,
             password,
             valido: true,
-            rg, 
+            validade_cnh,
+            ant_criminal, 
             foto
             
         }
@@ -143,20 +148,18 @@ todosRoutes.delete("/deleteuser/:id", async(request, response)=>{
     }
     
 });
-// ROTAS USUARIO COM PET
-todosRoutes.post("/createpet/", async(request, response)=>{
+// ROTAS MOTORISTA COM CARRO
+todosRoutes.post("/createcar/",verifyToken, async(request, response)=>{
     try {
-        const {userId, nome, peso, comportamento, foto, sexo, raca, especia}= request.params;
+        const {motoristaId,placa, modelo, marca, renavam, cor}= request.params;
 const criaPet = await prisma.pet.create({
     data:{
-  nome,          
-  peso,          
-  comportamento, 
-  foto,          
-  sexo,          
-  raca,          
-  especia, 
-  userId     
+  placa,
+  modelo,
+  marca,
+  renavam,
+  cor,
+  motoristaId    
     }
 
     
@@ -167,13 +170,13 @@ return response.status(200).json(criaPet);
     }
 
 });
-todosRoutes.get("/getpet/:id", async (request, response) =>{
+todosRoutes.get("/getcar/:id",verifyToken, async (request, response) =>{
 
     try {
-        const {userId} = request.body;
+        const {motoristaId} = request.body;
  const mostraPet =  await prisma.user.findMany({
     where:{
-        Id: userId
+        Id: motoristaId
     }
 
  });
@@ -183,22 +186,20 @@ todosRoutes.get("/getpet/:id", async (request, response) =>{
     }
 });
 
-todosRoutes.post("/updatepet/:id", async(request, response)=>{
+todosRoutes.post("/updatecar/:id",verifyToken, async(request, response)=>{
     try {
-        const {userId}= request.params;
+        const {motoristaId}= request.params;
 const criaPet = await prisma.pet.create({
     where:{
-        id: Number(userId)
+        id: Number(motoristaId)
 
     },
     data:{
-  nome,          
-  peso,          
-  comportamento, 
-  foto,          
-  sexo,          
-  raca,          
-  especia,      
+        placa,
+        modelo,
+        marca,
+        renavam,
+        cor,  
     }
 
     
