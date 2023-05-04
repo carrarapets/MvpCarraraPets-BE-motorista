@@ -3,6 +3,7 @@ const { response } = require("express");
 
 const express = require("express")
 const {generateToken} = require("./auth")
+const RuleValidation = require ('./ruleValidation/ruleValidation')
 const todosRoutes = express.Router();
 const {PrismaClient} = require("@prisma/client");
 const { equal } = require("assert");
@@ -23,6 +24,34 @@ function verifyJwt (request, response, next){
 };
 
 todosRoutes.post("/createmotorista", async(request, response) =>{
+
+    const emailValidate = RuleValidation.validationEmail(email);
+    //const emailAlready = RuleValidation.emailAlreadyExist(email);
+    const celularValidate = RuleValidation.validationPhone(celular);
+//  const celularAlready = RuleValidation.phoneAlreadyExist(celular);
+    const documentCpfValidate = RuleValidation.validationCpfDocument(cpf);      
+//  const documentCpfAlready = RuleValidation.CpfAlreadyExist(cpf);    
+    const documentRgValidate = RuleValidation.validationRgDocument(rg);      
+//  const documentRgAlready = RuleValidation.RgAlreadyExist(rg);  
+
+    if (emailValidate === false) {
+        throw new Error("Email Inválido!")
+//        } else if (emailAlready === false) {
+//            throw new Error("Email já cadastrado!", console.log(emailAlready))
+    } else if (celularValidate === false) {
+        throw new Error("Celular Inválido!")
+        //            } else if (celularAlready == false) {
+        //                  throw new Error("Celular já cadastrado!")
+    } else if (documentCpfValidate === false) {
+        throw new Error("CPF Inválido!")
+        //                                } else if (documentCpfAlready == false) {
+        //                                throw new Error("CPF já cadastrado!")
+    } else if (documentRgValidate === false) {
+        throw new Error("RG Inválido!")
+        //                                } else if (documentRgAlready == false) {
+        //                                throw new Error("CPF já cadastrado!")
+    } else {
+
     try {
         const{nome, sobrenome, CNH, celular, email, password,validade_cnh, ant_criminal, foto, }=request.body;
     const criaUsuario = await prisma.motorista.create({
@@ -37,8 +66,6 @@ todosRoutes.post("/createmotorista", async(request, response) =>{
             validade_cnh,
             ant_criminal, 
             foto
-            
-
         },
     },
     ConfigServerEmail.sendMail({
@@ -59,7 +86,8 @@ todosRoutes.post("/createmotorista", async(request, response) =>{
         return response.status(500).json({message: error.message});
     }
     
-});
+}});
+
 todosRoutes.get("/loginMotorista", async(request, response)=>{
     try {
         const {email, password}= request.body;
