@@ -16,7 +16,7 @@ pool.on('connect', () => {
   console.log('Teamwork Database connected successfully!');
 });
 const app = express();
-app.use(cors())
+app.use(cors());
 
 
 
